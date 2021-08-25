@@ -1,0 +1,24 @@
+{
+    "name": "gravitatenz/fta-auth",
+    "description": "Simple symfony authentication and security helpers",
+    "type": "library",
+    "license": "BSD-3-CLAUSE",
+    "autoload": {
+        "psr-4": {
+            "GravitateNZ\\fta\\auth\\Security\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "John Lennard",
+            "email": "john@yakmoo.se"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "symfony/security-core": ">=4.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    }
+}
