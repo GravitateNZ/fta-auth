@@ -32,7 +32,7 @@ class RecaptchaUserChecker implements \Symfony\Component\Security\Core\User\User
     public function checkPreAuth(UserInterface $user)
     {
         $loginAttempts = $this->session->get('login_attempts', 0);
-        $this->session->set('login_attempts', $loginAttempts++);
+        $this->session->set('login_attempts', $loginAttempts + 1);
 
         if ($loginAttempts +1 >= $this->recaptchaLimit) {
             $this->session->set('login_annoy', true);
