@@ -40,8 +40,7 @@ class AuthenticationFailureLockoutListener
         if ($config->getName() !== $this->firewallName) {
             return;
         }
-
-        $config->getName() ===
+        
         $token = $event->getAuthenticationToken();
         $username = $token->getUsername();
 
