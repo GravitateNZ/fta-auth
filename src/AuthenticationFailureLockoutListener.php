@@ -22,31 +22,31 @@ use Symfony\Component\Security\Http\Firewall;
 class AuthenticationFailureLockoutListener
 {
     protected UserProviderInterface $userProvider;
-    protected FirewallConfig $firewallConfig;
     protected RequestStack $requestStack;
     protected FirewallMap $firewallMap;
+    protected string $firewallName;
 
-    public function __construct(FirewallMap $firewallMap, FirewallConfig $firewallConfig, UserProviderInterface $userProvider, RequestStack $requestStack)
+    public function __construct(string $firewallName, FirewallMap $firewallMap, UserProviderInterface $userProvider, RequestStack $requestStack)
     {
-        $this->firewallConfig = $firewallConfig;
         $this->userProvider = $userProvider;
         $this->requestStack = $requestStack;
         $this->firewallMap = $firewallMap;
+        $this->firewallName = $firewallName;
     }
 
     public function lockoutHandler(AuthenticationFailureEvent $event): void
     {
-
         $config = $this->firewallMap->getFirewallConfig($this->requestStack->getCurrentRequest());
-        if ($config !== $this->firewallConfig) {
+        if ($config->getName() !== $this->firewallName) {
             return;
         }
 
+        $config->getName() ===
         $token = $event->getAuthenticationToken();
         $username = $token->getUsername();
 
         $user = $this->userProvider->loadUserByUsername($username);
-        if (! $user instanceof LockableUserInterface){
+        if (!$user instanceof LockableUserInterface) {
             throw new UnsupportedUserException("User must implement LockableUser");
         }
 

@@ -23,6 +23,10 @@ class AuthenticationFailureListenerTest extends \PHPUnit\Framework\TestCase
                      ->with('name')
                      ->willReturn($user);
 
+        $firewallConfig = new \Symfony\Bundle\SecurityBundle\Security\FirewallConfig("test", "test");
+        $firewallMap = $this->createMock(\Symfony\Bundle\SecurityBundle\Security\FirewallMap::class);
+        $firewallMap->method('getFirewallConfig')->willReturn($firewallConfig);
+
         $token = $this->createMock(
             \Symfony\Component\Security\Core\Authentication\Token\TokenInterface::class
         );
@@ -36,8 +40,14 @@ class AuthenticationFailureListenerTest extends \PHPUnit\Framework\TestCase
             new \Symfony\Component\Security\Core\Exception\AuthenticationException()
         );
 
+        $requestStack = new \Symfony\Component\HttpFoundation\RequestStack();
+        $requestStack->push(new \Symfony\Component\HttpFoundation\Request());
+
         $l = new \GravitateNZ\fta\auth\Security\AuthenticationFailureLockoutListener(
-            $userProvider
+            'test',
+            $firewallMap,
+            $userProvider,
+            $requestStack
         );
 
 
@@ -63,10 +73,20 @@ class AuthenticationFailureListenerTest extends \PHPUnit\Framework\TestCase
             new \Symfony\Component\Security\Core\Exception\AuthenticationException()
         );
 
+        $firewallConfig = new \Symfony\Bundle\SecurityBundle\Security\FirewallConfig("test", "test");
+        $firewallMap = $this->createMock(\Symfony\Bundle\SecurityBundle\Security\FirewallMap::class);
+        $firewallMap->method('getFirewallConfig')->willReturn($firewallConfig);
+
+        $requestStack = new \Symfony\Component\HttpFoundation\RequestStack();
+        $requestStack->push(new \Symfony\Component\HttpFoundation\Request());
+        
         $this->expectException(\Symfony\Component\Security\Core\Exception\UnsupportedUserException::class);
 
         $l = new \GravitateNZ\fta\auth\Security\AuthenticationFailureLockoutListener(
-            $userProvider
+            'test',
+            $firewallMap,
+            $userProvider,
+            $requestStack
         );
 
         $l->lockoutHandler($event);
