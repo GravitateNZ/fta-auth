@@ -17,8 +17,6 @@ class UserLockedUserCheckerTest extends TestCase
         $this->assertNull($uc->checkPostAuth($userMock));
     }
 
-
-
     public function testPostAuthLocked()
     {
         $d = new DateTime();
