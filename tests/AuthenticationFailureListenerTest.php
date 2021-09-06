@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+namespace GravitateNZ\fta\auth\Security\tests;
+
 use Symfony\Component\Security\Core\Event\AuthenticationFailureEvent;
 
 /**
@@ -7,6 +9,7 @@ use Symfony\Component\Security\Core\Event\AuthenticationFailureEvent;
  */
 class AuthenticationFailureListenerTest extends \PHPUnit\Framework\TestCase
 {
+    use RequestStackTrait;
 
     public function testListener()
     {
@@ -23,10 +26,6 @@ class AuthenticationFailureListenerTest extends \PHPUnit\Framework\TestCase
                      ->with('name')
                      ->willReturn($user);
 
-        $firewallConfig = new \Symfony\Bundle\SecurityBundle\Security\FirewallConfig("test", "test");
-        $firewallMap = $this->createMock(\Symfony\Bundle\SecurityBundle\Security\FirewallMap::class);
-        $firewallMap->method('getFirewallConfig')->willReturn($firewallConfig);
-
         $token = $this->createMock(
             \Symfony\Component\Security\Core\Authentication\Token\TokenInterface::class
         );
@@ -40,18 +39,21 @@ class AuthenticationFailureListenerTest extends \PHPUnit\Framework\TestCase
             new \Symfony\Component\Security\Core\Exception\AuthenticationException()
         );
 
-        $requestStack = new \Symfony\Component\HttpFoundation\RequestStack();
-        $requestStack->push(new \Symfony\Component\HttpFoundation\Request());
+        $requestStack = $this->getRequestStack();
 
         $l = new \GravitateNZ\fta\auth\Security\AuthenticationFailureLockoutListener(
-            'test',
-            $firewallMap,
             $userProvider,
-            $requestStack
+            $requestStack,
+            'test',
+            0
         );
 
 
         $l->lockoutHandler($event);
+        [$count,$failCount]  = $requestStack->getSession()->get('name_test_logincount');
+        $this->assertGreaterThan($failCount, $count);
+        $this->assertEquals(1, $count);
+
     }
 
     public function testListenerWrongUserInterface()
@@ -73,24 +75,53 @@ class AuthenticationFailureListenerTest extends \PHPUnit\Framework\TestCase
             new \Symfony\Component\Security\Core\Exception\AuthenticationException()
         );
 
-        $firewallConfig = new \Symfony\Bundle\SecurityBundle\Security\FirewallConfig("test", "test");
-        $firewallMap = $this->createMock(\Symfony\Bundle\SecurityBundle\Security\FirewallMap::class);
-        $firewallMap->method('getFirewallConfig')->willReturn($firewallConfig);
+        $requestStack = $this->getRequestStack();
 
-        $requestStack = new \Symfony\Component\HttpFoundation\RequestStack();
-        $requestStack->push(new \Symfony\Component\HttpFoundation\Request());
-        
         $this->expectException(\Symfony\Component\Security\Core\Exception\UnsupportedUserException::class);
 
         $l = new \GravitateNZ\fta\auth\Security\AuthenticationFailureLockoutListener(
-            'test',
-            $firewallMap,
             $userProvider,
-            $requestStack
+            $requestStack,
+            'test',
+            0
         );
 
         $l->lockoutHandler($event);
 
     }
 
+    public function testUserDoesNotExist()
+    {
+
+        $userProvider = $this->createMock(\Symfony\Component\Security\Core\User\UserProviderInterface::class);
+        $userProvider->expects($this->once())
+                     ->method('loadUserByUsername')
+                     ->with('name')
+                     ->willReturn(null);
+
+        $token = $this->createMock(
+            \Symfony\Component\Security\Core\Authentication\Token\TokenInterface::class
+        );
+        $token->expects($this->once())->method('getUsername')->willReturn('name');
+        $event = new AuthenticationFailureEvent(
+            $token,
+            new \Symfony\Component\Security\Core\Exception\AuthenticationException()
+        );
+
+        $requestStack = $this->getRequestStack();
+
+        $l = new \GravitateNZ\fta\auth\Security\AuthenticationFailureLockoutListener(
+            $userProvider,
+            $requestStack,
+            'test',
+            0
+        );
+
+        $l->lockoutHandler($event);
+
+        [$count,$failCount]  = $requestStack->getSession()->get('name_test_logincount');
+        $this->assertGreaterThan($failCount, $count);
+        $this->assertEquals(1, $count);
+    }
+    
 }
