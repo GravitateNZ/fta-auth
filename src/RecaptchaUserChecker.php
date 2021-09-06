@@ -38,10 +38,9 @@ class RecaptchaUserChecker implements \Symfony\Component\Security\Core\User\User
 
     public function checkPreAuth(UserInterface $user)
     {
-        
-        $firewallContext = $this->getFirewallContext();
 
-        $k = $firewallContext . "_login_attempts";
+        $firewallName = $this->getFirewallNameFromContext();
+        $k = $firewallName . "_login_attempts";
         $loginAttempts = $this->session->get($k, 0);
 
         if ($loginAttempts < $this->recaptchaLimit) {
@@ -83,7 +82,8 @@ class RecaptchaUserChecker implements \Symfony\Component\Security\Core\User\User
     public function checkPostAuth(UserInterface $user)
     {
         //reset it when we login
-        $loginAttempts = $this->session->set('login_attempts', 0);
-        $this->session->set('login_annoy', false);
+        $firewallName = $this->getFirewallNameFromContext();
+        $loginAttempts = $this->session->set($firewallName . '_login_attempts', 0);
+        $this->session->set($firewallName . '_login_annoy', false);
     }
 }
