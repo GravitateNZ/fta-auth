@@ -38,8 +38,8 @@ class RecaptchaUserChecker implements \Symfony\Component\Security\Core\User\User
 
     public function checkPreAuth(UserInterface $user)
     {
-        
-        $firewallContext = $this->getFirewallContext();
+        $loginAttempts = $this->session->get('login_attempts', 0);
+        $this->session->set('login_attempts', $loginAttempts + 1);
 
         $k = $firewallContext . "_login_attempts";
         $loginAttempts = $this->session->get($k, 0);
