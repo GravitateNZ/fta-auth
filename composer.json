@@ -8,6 +8,11 @@
             "GravitateNZ\\fta\\auth\\Security\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "GravitateNZ\\fta\\auth\\Security\\tests\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "John Lennard",

@@ -13,6 +13,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 class RecaptchaUserChecker implements \Symfony\Component\Security\Core\User\UserCheckerInterface
 {
 
+    use FirewallContextTrait;
+
     protected RequestStack $requestStack;
     protected int $recaptchaLimit;
     protected SessionInterface $session;
@@ -21,7 +23,12 @@ class RecaptchaUserChecker implements \Symfony\Component\Security\Core\User\User
     /**
      * @param RequestStack $requestStack
      */
-    public function __construct(SessionInterface $session, RequestStack $requestStack, int $recaptchaLimit, string $secretKey)
+    public function __construct(
+        SessionInterface $session,
+        RequestStack $requestStack,
+        int $recaptchaLimit,
+        string $secretKey
+    )
     {
         $this->requestStack = $requestStack;
         $this->recaptchaLimit = $recaptchaLimit;
@@ -31,12 +38,11 @@ class RecaptchaUserChecker implements \Symfony\Component\Security\Core\User\User
 
     public function checkPreAuth(UserInterface $user)
     {
-        $loginAttempts = $this->session->get('login_attempts', 0);
-        $this->session->set('login_attempts', $loginAttempts++);
+        
+        $firewallContext = $this->getFirewallContext();
 
-        if ($loginAttempts +1 >= $this->recaptchaLimit) {
-            $this->session->set('login_annoy', true);
-        }
+        $k = $firewallContext . "_login_attempts";
+        $loginAttempts = $this->session->get($k, 0);
 
         if ($loginAttempts < $this->recaptchaLimit) {
             return;
@@ -79,6 +85,5 @@ class RecaptchaUserChecker implements \Symfony\Component\Security\Core\User\User
         //reset it when we login
         $loginAttempts = $this->session->set('login_attempts', 0);
         $this->session->set('login_annoy', false);
-
     }
 }
