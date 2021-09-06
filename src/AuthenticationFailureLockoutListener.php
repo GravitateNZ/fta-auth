@@ -65,7 +65,9 @@ class AuthenticationFailureLockoutListener
 
         if ($user) {
             if($user instanceof LockableUserInterface) {
-                $user->incrementFailedLogins(new \DateTime());
+                $dt = new \DateTime();
+                $user->incrementFailedLogins($dt);
+                $user->isLocked($this->lockoutCount, $dt);
             } else {
                 throw new UnsupportedUserException("User must implement LockableUser");
             }

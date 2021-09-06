@@ -123,5 +123,5 @@ class AuthenticationFailureListenerTest extends \PHPUnit\Framework\TestCase
         $this->assertGreaterThan($failCount, $count);
         $this->assertEquals(1, $count);
     }
-    
+
 }
