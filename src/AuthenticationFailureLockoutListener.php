@@ -56,8 +56,10 @@ class AuthenticationFailureLockoutListener
         $user = null;
         try {
             $user = $this->userProvider->loadUserByUsername($username);
-        } catch (UsernameNotFoundException $usernameNotFoundException){
-        }
+            if ($user instanceof LockableUserInterface) {
+                $failedCount = $user->getFailedLoginCount();
+            }
+        } catch (UsernameNotFoundException $usernameNotFoundException){}
 
         $failedCount++;
 
