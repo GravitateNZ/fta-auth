@@ -3,6 +3,7 @@
 
 namespace GravitateNZ\fta\auth\Security;
 
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Exception\LockedException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use \Symfony\Component\Security\Core\User\UserCheckerInterface;
@@ -11,14 +12,16 @@ class UserLockedUserChecker implements UserCheckerInterface
 {
     protected int $lockoutCount;
     protected string $interval;
+    protected RequestStack $requestStack;
 
-    public function __construct(int $lockoutCount, string $interval)
+    public function __construct(RequestStack $requestStack, int $lockoutCount, string $lockoutInterval)
     {
         $this->lockoutCount = $lockoutCount;
-        $this->interval = $interval;
+        $this->interval = $lockoutInterval;
+        $this->requestStack = $requestStack;
     }
 
-    public function checkPostAuth(UserInterface $user)
+    public function checkPreAuth(UserInterface $user)
     {
         if (!$user instanceof LockableUserInterface) {
             return;
@@ -34,11 +37,16 @@ class UserLockedUserChecker implements UserCheckerInterface
             $e->setUser($user);
             throw $e;
         }
+    }
+
+    public function checkPostAuth(UserInterface $user)
+    {
+        if (!$user instanceof LockableUserInterface) {
+            return;
+        }
 
         $user->clearLoginAttempts();
     }
 
-    /** @codeCoverageIgnore  */
-    public function checkPreAuth(UserInterface $user)
-    {}
+
 }

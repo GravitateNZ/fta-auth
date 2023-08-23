@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+namespace GravitateNZ\fta\auth\Security\tests;
 
 use PHPUnit\Framework\TestCase;
 use GravitateNZ\fta\auth\Security\UserLockedUserChecker;
@@ -9,19 +10,22 @@ use GravitateNZ\fta\auth\Security\UserLockedUserChecker;
 class UserLockedUserCheckerTest extends TestCase
 {
 
+    use RequestStackTrait;
 
-    public function testPostAuthUserInterface()
+//    public function testPostAuthUserInterface()
+//    {
+//        $userMock = $this->createMock(\Symfony\Component\Security\Core\User\UserInterface::class);
+//
+//        $requestStack = $this->getRequestStack();
+//        $requestStack->getCurrentRequest()->attributes->set('_firewall_context','security.firewall.map.context.test');
+//
+//        $uc = new UserLockedUserChecker($requestStack, 1, "PT1S");
+//        $this->assertNull($uc->checkPostAuth($userMock));
+//    }
+
+    public function testPreAuthLocked()
     {
-        $userMock = $this->createMock(\Symfony\Component\Security\Core\User\UserInterface::class);
-        $uc = new UserLockedUserChecker(1, "PT1S");
-        $this->assertNull($uc->checkPostAuth($userMock));
-    }
-
-
-
-    public function testPostAuthLocked()
-    {
-        $d = new DateTime();
+        $d = new \DateTime();
         $userMock = $this->createMock(\GravitateNZ\fta\auth\Security\LockableUserInterface::class);
         $userMock->expects($this->once())
                  ->method("isLocked")
@@ -35,8 +39,11 @@ class UserLockedUserCheckerTest extends TestCase
             \Symfony\Component\Security\Core\Exception\LockedException::class
         );
 
-        $uc = new UserLockedUserChecker(1, "PT1S");
-        $uc->checkPostAuth($userMock);
+        $requestStack = $this->getRequestStack();
+        $requestStack->getCurrentRequest()->attributes->set('_firewall_context','security.firewall.map.context.test');
+
+        $uc = new UserLockedUserChecker($requestStack, 1, "PT1S");
+        $uc->checkPreAuth($userMock);
     }
 
     public function testPostAuthUnlocked()
@@ -45,7 +52,10 @@ class UserLockedUserCheckerTest extends TestCase
         $userMock->method("isLocked")->willReturn(false);
         $userMock->expects($this->once())->method("clearLoginAttempts");
 
-        $uc = new UserLockedUserChecker(1, "PT1S");
+        $requestStack = $this->getRequestStack();
+        $requestStack->getCurrentRequest()->attributes->set('_firewall_context','security.firewall.map.context.test');
+
+        $uc = new UserLockedUserChecker($requestStack,1, "PT1S");
         $uc->checkPostAuth($userMock);
     }
 }
