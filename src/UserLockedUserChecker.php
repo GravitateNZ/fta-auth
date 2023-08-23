@@ -30,17 +30,8 @@ class UserLockedUserChecker implements UserCheckerInterface
         $i = new \DateInterval($this->interval);
         $dt = (new \DateTime())->sub($i);
         if ($user->isLocked($this->lockoutCount, $dt)) {
-            $message = "This account has been locked please try again in";
-            if ($i->h > 0) {
-                $message .= " {$i->format("%H")} hours";
-            }
-            if ($i->h > 0 && $i->i > 0) {
-                $message .= " and ";
-            }
 
-            if ($i->i > 0) {
-                $message .= " {$i->format("%i")} minutes";
-            }
+            $message = "Please try again";
 
             $e =  new LockedException($message);
             $e->setUser($user);

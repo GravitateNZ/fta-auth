@@ -69,7 +69,7 @@ class RecaptchaUserChecker implements \Symfony\Component\Security\Core\User\User
         );
 
         if (!$result) {
-            throw new AuthenticationException("Cannot validate reCaptcha response");
+            throw new AuthenticationException("Please try again");
         }
 
         $result = json_decode($result);
